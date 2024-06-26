@@ -39,7 +39,6 @@ class _UIpageState extends State<UIpage> {
               icon: const Icon(Icons.menu),
               iconSize: 24,
               elevation: 16,
-              style: const TextStyle(color: Colors.deepPurple),
               underline: Container(
                 height: 2,
                 color: Colors.deepPurpleAccent,
@@ -55,7 +54,7 @@ class _UIpageState extends State<UIpage> {
               items: availablePorts.map<DropdownMenuItem<String>>((String value) {
                 return DropdownMenuItem<String>(
                   value: value,
-                  child: Text(value),
+                  child: Text(value,style: const TextStyle(fontSize: 16,fontWeight: FontWeight.w400),),
                 );
               }).toList(),
             ),

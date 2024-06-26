@@ -90,7 +90,7 @@ class _RegisterViewState extends State<RegisterView> {
                   const SizedBox(height: 10.0),
                   // Spacing between the text and the first input field
                   TextField(
-                    style: const TextStyle(fontSize: 16),
+                    style: const TextStyle(fontSize: 16,fontWeight: FontWeight.w300),
                     controller: _decController,
                     decoration: const InputDecoration(
                       isDense: true,
@@ -101,7 +101,7 @@ class _RegisterViewState extends State<RegisterView> {
                   const SizedBox(height: 8.0),
                   // Spacing between the input fields
                   TextField(
-                    style: const TextStyle(fontSize: 16),
+                    style: const TextStyle(fontSize: 16,fontWeight: FontWeight.w300),
                     controller: _binController,
                     decoration: const InputDecoration(
                       isDense: true,
