@@ -1,53 +1,88 @@
-class Register {
+import 'dart:math';
 
+class Register {
   String name;
+  String help;
   int value;
   int nbits;
 
-  Register({this.name = "",this.value = 0, this.nbits = 1});
+  Register({this.name = "", this.value = 0, this.nbits = 1, this.help = ""});
 
   String decTobin(String dec) {
     int rem = int.parse(dec);
     bool isNeg = rem < 0;
-    if(isNeg) {
+    if (isNeg) {
       rem = -rem;
     }
     String bin = "";
-    while(rem != 0 && rem != 1) {
-      bin = "${rem%2}${bin}";
+    while (rem != 0 && rem != 1) {
+      bin = "${rem % 2}${bin}";
       rem = rem ~/ 2;
     }
     bin = "${rem}${bin}";
-    while(bin.length < nbits) {
+    while (bin.length < nbits) {
       bin = "0${bin}";
     }
 
-    if(isNeg) {
-     for(int i = 0; i < bin.length; i++) {
-       bin[i] == '0' ? bin = bin.replaceCharAt(i, '1') : bin = bin.replaceCharAt(i, '0');
-     }
-     int i = bin.length-1;
-     if(bin[i] != '0') {
-       while (bin[i] == '1') {
-         bin = bin.replaceCharAt(i, '0');
-         i--;
-       }
-       bin = bin.replaceCharAt(i, '1');
-     } else {
-       bin = bin.replaceCharAt(i, '1');
-     }
+    if (isNeg) {
+      for (int i = 0; i < bin.length; i++) {
+        bin[i] == '0'
+            ? bin = bin.replaceCharAt(i, '1')
+            : bin = bin.replaceCharAt(i, '0');
+      }
+      int i = bin.length - 1;
+      if (bin[i] != '0') {
+        while (bin[i] == '1') {
+          bin = bin.replaceCharAt(i, '0');
+          i--;
+        }
+        bin = bin.replaceCharAt(i, '1');
+      } else {
+        bin = bin.replaceCharAt(i, '1');
+      }
     }
 
     return bin;
   }
 
-  static String binToDec(String bin) {
-      return "";
+  String binToDec(String bin) {
+    bool isNeg = false;
+    if (bin.length < nbits) {
+      while (bin.length < nbits) {
+        bin = "0${bin}";
+      }
+    }
+    isNeg = bin[0] == '1';
+    if (isNeg) {
+      for (int i = 0; i < bin.length; i++) {
+        bin[i] == '0'
+            ? bin = bin.replaceCharAt(i, '1')
+            : bin = bin.replaceCharAt(i, '0');
+      }
+      int i = bin.length - 1;
+      if (bin[i] != '0') {
+        while (bin[i] == '1') {
+          bin = bin.replaceCharAt(i, '0');
+          i--;
+        }
+        bin = bin.replaceCharAt(i, '1');
+      } else {
+        bin = bin.replaceCharAt(i, '1');
+      }
+    }
+    int res = 0;
+    for (int j = nbits - 1; j >= 0; j--) {
+      if (bin[j] == '1') {
+        res += pow(2, nbits - 1 - j).round();
+      }
+    }
+    if (isNeg) res = -res;
+    return res.toString();
   }
 }
 
 extension on String {
-  String replaceCharAt( int index, String newChar) {
+  String replaceCharAt(int index, String newChar) {
     return substring(0, index) + newChar + substring(index + 1);
   }
 }
