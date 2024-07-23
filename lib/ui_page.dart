@@ -1,6 +1,9 @@
+import 'dart:typed_data';
+
 import 'package:dogx_ui/register.dart';
 import 'package:dogx_ui/register_list.dart';
 import 'package:dogx_ui/register_view.dart';
+import 'package:dogx_ui/serial_reader.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_libserialport/flutter_libserialport.dart';
@@ -16,10 +19,17 @@ class _UIpageState extends State<UIpage> {
 
   List<String> availablePorts = [];
   String selectedPort = "";
+
+
   @override
   void initState() {
     availablePorts = SerialPort.availablePorts;
     if(availablePorts.isNotEmpty) selectedPort = availablePorts.first;
+    if(selectedPort != "") {
+      SerialReader.listen(selectedPort, (String newLine) {
+        print(newLine);
+      });
+    }
     super.initState();
   }
 
@@ -49,6 +59,11 @@ class _UIpageState extends State<UIpage> {
               onChanged: (String? newValue) {
                 setState(() {
                   selectedPort = newValue!;
+                  if(selectedPort != "") {
+                    SerialReader.listen(selectedPort, (String newLine) {
+                      print(newLine);
+                    });
+                  }
                 });
               },
               items: availablePorts.map<DropdownMenuItem<String>>((String value) {
@@ -69,7 +84,7 @@ class _UIpageState extends State<UIpage> {
             maxCrossAxisExtent: 300.0, // Maximum width of each item
             crossAxisSpacing: 2.0,
             mainAxisSpacing: 2.0,
-            childAspectRatio:2, // Adjust aspect ratio if needed
+            childAspectRatio:1.95, // Adjust aspect ratio if needed
           ),
           itemCount: RegisterList.regList.length, // Adjust this based on how many items you want
           itemBuilder: (context, index) {
@@ -81,7 +96,9 @@ class _UIpageState extends State<UIpage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Add your onPressed code here!
+          SerialPort(selectedPort).openReadWrite();
+          SerialPort(selectedPort).write(RegisterList.regList.first.getSendData());
+
         },
         child: Icon(Icons.update),
       ),

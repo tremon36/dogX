@@ -17,26 +17,64 @@ class _RegisterViewState extends State<RegisterView> {
 
   void changeDecimalText() {
     try {
-      print(widget.register.binToDec(_binController.text));
-      _decController.removeListener(changeBinaryText);
-      _decController.text = widget.register.binToDec(_binController.text);
-      _decController.addListener(changeBinaryText);
+
+      bool overflow = false;
+      int newval = int.parse(widget.register.binToDec(_binController.text));
+      if(newval > widget.register.maxVal()) {
+        newval = widget.register.maxVal();
+        overflow = true;
+      }
+      if(newval < widget.register.minVal()) {
+        newval = widget.register.minVal();
+        overflow = true;
+      }
+
+
+        widget.register.value = newval;
+        _binController.removeListener(changeDecimalText);
+        _decController.removeListener(changeBinaryText);
+        if(overflow) {
+          _binController.text = widget.register.decTobin(newval.toString());
+        }
+        _decController.text = newval.toString();
+        _binController.addListener(changeDecimalText);
+        _decController.addListener(changeBinaryText);
+
     } catch (e) {}
-    ;
   }
 
   void changeBinaryText() {
     try {
-      print(widget.register.decTobin(_decController.text));
+
+      int newval = int.parse(_decController.text);
+      bool overflow = false;
+      if(newval > widget.register.maxVal()) {
+        newval = widget.register.maxVal();
+        overflow = true;
+      }
+      if(newval < widget.register.minVal()) {
+        newval = widget.register.minVal();
+        overflow = true;
+      }
+
+      widget.register.value = newval;
+
       _binController.removeListener(changeDecimalText);
-      _binController.text = widget.register.decTobin(_decController.text);
+      _decController.removeListener(changeBinaryText);
+      _binController.text = widget.register.decTobin(newval.toString());
+      if(overflow) {
+        _decController.text = newval.toString();
+      }
       _binController.addListener(changeDecimalText);
+      _decController.addListener(changeBinaryText);
+
     } catch (e) {}
-    ;
   }
 
   @override
   void initState() {
+    _decController.text = widget.register.value.toString();
+    _binController.text = widget.register.decTobin(widget.register.value.toString());
     _decController.addListener(changeBinaryText);
     _binController.addListener(changeDecimalText);
     super.initState();
@@ -78,7 +116,7 @@ class _RegisterViewState extends State<RegisterView> {
                       Spacer(),
                       // This will push the following Text widget to the right
                       Text(
-                        '${widget.register.nbits} bits',
+                        '${widget.register.nbits} bits ${widget.register.signed ? "signed" : "unsigned"}',
                         style: const TextStyle(
                           fontSize: 14.0,
                           fontStyle: FontStyle.italic,
