@@ -2,14 +2,17 @@ import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:flutter/cupertino.dart';
+
 class Register {
   String name;
   String help;
   int value;
   int nbits;
   bool signed;
+  bool syncedWithChip;
 
-  Register({this.name = "", this.value = 0, this.nbits = 1, this.help = "", this.signed = true});
+  Register({this.name = "", this.value = 0, this.nbits = 1, this.help = "", this.signed = true, this.syncedWithChip = true});
 
   String decTobin(String dec) {
     int rem = int.parse(dec);
@@ -97,11 +100,15 @@ class Register {
 
   Uint8List getSendData() {
     String toSend = decTobin(value.toString());
-    toSend = "$name:$toSend";
+    toSend = "$name:$toSend\n";
     int byteAmount = toSend.length+1;
     List<int> list = [byteAmount];
     list.addAll(ascii.encode(toSend));
     return Uint8List.fromList(list);
+  }
+
+  String toString() {
+    return "\nname: $name,value: $value\n";
   }
 }
 

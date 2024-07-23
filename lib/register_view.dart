@@ -9,6 +9,7 @@ class RegisterView extends StatefulWidget {
 
   @override
   _RegisterViewState createState() => _RegisterViewState();
+
 }
 
 class _RegisterViewState extends State<RegisterView> {
@@ -17,64 +18,63 @@ class _RegisterViewState extends State<RegisterView> {
 
   void changeDecimalText() {
     try {
-
       bool overflow = false;
       int newval = int.parse(widget.register.binToDec(_binController.text));
-      if(newval > widget.register.maxVal()) {
+      if (newval > widget.register.maxVal()) {
         newval = widget.register.maxVal();
         overflow = true;
       }
-      if(newval < widget.register.minVal()) {
-        newval = widget.register.minVal();
-        overflow = true;
-      }
-
-
-        widget.register.value = newval;
-        _binController.removeListener(changeDecimalText);
-        _decController.removeListener(changeBinaryText);
-        if(overflow) {
-          _binController.text = widget.register.decTobin(newval.toString());
-        }
-        _decController.text = newval.toString();
-        _binController.addListener(changeDecimalText);
-        _decController.addListener(changeBinaryText);
-
-    } catch (e) {}
-  }
-
-  void changeBinaryText() {
-    try {
-
-      int newval = int.parse(_decController.text);
-      bool overflow = false;
-      if(newval > widget.register.maxVal()) {
-        newval = widget.register.maxVal();
-        overflow = true;
-      }
-      if(newval < widget.register.minVal()) {
+      if (newval < widget.register.minVal()) {
         newval = widget.register.minVal();
         overflow = true;
       }
 
       widget.register.value = newval;
+      widget.register.syncedWithChip = false;
+
+      _binController.removeListener(changeDecimalText);
+      _decController.removeListener(changeBinaryText);
+      if (overflow) {
+        _binController.text = widget.register.decTobin(newval.toString());
+      }
+      _decController.text = newval.toString();
+      _binController.addListener(changeDecimalText);
+      _decController.addListener(changeBinaryText);
+    } catch (e) {}
+  }
+
+  void changeBinaryText() {
+    try {
+      int newval = int.parse(_decController.text);
+      bool overflow = false;
+      if (newval > widget.register.maxVal()) {
+        newval = widget.register.maxVal();
+        overflow = true;
+      }
+      if (newval < widget.register.minVal()) {
+        newval = widget.register.minVal();
+        overflow = true;
+      }
+
+      widget.register.value = newval;
+      widget.register.syncedWithChip = false;
 
       _binController.removeListener(changeDecimalText);
       _decController.removeListener(changeBinaryText);
       _binController.text = widget.register.decTobin(newval.toString());
-      if(overflow) {
+      if (overflow) {
         _decController.text = newval.toString();
       }
       _binController.addListener(changeDecimalText);
       _decController.addListener(changeBinaryText);
-
     } catch (e) {}
   }
 
   @override
   void initState() {
     _decController.text = widget.register.value.toString();
-    _binController.text = widget.register.decTobin(widget.register.value.toString());
+    _binController.text =
+        widget.register.decTobin(widget.register.value.toString());
     _decController.addListener(changeBinaryText);
     _binController.addListener(changeDecimalText);
     super.initState();
@@ -89,6 +89,9 @@ class _RegisterViewState extends State<RegisterView> {
 
   @override
   Widget build(BuildContext context) {
+
+    _decController.text = widget.register.value.toString();
+
     return Tooltip(
       message: widget.register.help,
       preferBelow: false,
@@ -128,7 +131,8 @@ class _RegisterViewState extends State<RegisterView> {
                   const SizedBox(height: 10.0),
                   // Spacing between the text and the first input field
                   TextField(
-                    style: const TextStyle(fontSize: 16,fontWeight: FontWeight.w300),
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.w300),
                     controller: _decController,
                     decoration: const InputDecoration(
                       isDense: true,
@@ -139,7 +143,8 @@ class _RegisterViewState extends State<RegisterView> {
                   const SizedBox(height: 8.0),
                   // Spacing between the input fields
                   TextField(
-                    style: const TextStyle(fontSize: 16,fontWeight: FontWeight.w300),
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.w300),
                     controller: _binController,
                     decoration: const InputDecoration(
                       isDense: true,
