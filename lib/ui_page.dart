@@ -115,6 +115,7 @@ class _UIpageState extends State<UIpage> {
           for (Register reg in RegisterList.regList) {
             if (!reg.syncedWithChip) {
               serialWR.print(reg.getSendData());
+              print(reg);
               reg.syncedWithChip = true;
             }
           }

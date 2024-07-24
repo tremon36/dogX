@@ -8,8 +8,11 @@ class CommandProcessor {
   static void processCommand(String command) {
     String regname = command.split(":").first;
     String regval = command.split(":").last;
-    RegisterList.regList.firstWhere((Register r) => r.name == regname).value = int.parse(regval);
-   // print(RegisterList.regList);
-    RegProvider().requestUpdate();
+    try {
+      Register reg =
+      RegisterList.regList.firstWhere((Register r) => r.name == regname);
+      reg.value = int.parse(reg.binToDec(regval));
+      RegProvider().requestUpdate();
+    }catch(e){};
   }
 }
