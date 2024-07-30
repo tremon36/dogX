@@ -1,9 +1,15 @@
+import 'package:dogx_ui/json_file_handler.dart';
 import 'package:dogx_ui/reg_provider.dart';
+import 'package:dogx_ui/register.dart';
+import 'package:dogx_ui/register_list.dart';
 import 'package:dogx_ui/ui_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-void main() {
+Future<void> main() async {
+
+  RegisterList.regList = await JsonFileHandler.readListFromJsonFile() as List<Register>;
+
   runApp(ChangeNotifierProvider(
       create: (context) => RegProvider(),
       lazy: false,

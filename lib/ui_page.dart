@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:dogx_ui/command_processor.dart';
+import 'package:dogx_ui/json_file_handler.dart';
 import 'package:dogx_ui/reg_provider.dart';
 import 'package:dogx_ui/register.dart';
 import 'package:dogx_ui/register_list.dart';
@@ -47,12 +48,13 @@ class _UIpageState extends State<UIpage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'DOG X',
+          'Programmer',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: <Widget>[
+
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 40.0),
+            padding: const EdgeInsets.only(right: 10.0),
             child: DropdownButton<String>(
               value: selectedPort,
               icon: const Icon(Icons.menu),
@@ -67,6 +69,11 @@ class _UIpageState extends State<UIpage> {
               },
               onChanged: (String? newValue) {
                 setState(() {
+                  if(selectedPort != newValue) {
+                    for(Register r in RegisterList.regList) {
+                      r.syncedWithChip = false;
+                    }
+                  }
                   selectedPort = newValue!;
                   if (selectedPort != "") {
                     serialWR.begin(selectedPort);
@@ -78,7 +85,7 @@ class _UIpageState extends State<UIpage> {
                 });
               },
               items:
-                  availablePorts.map<DropdownMenuItem<String>>((String value) {
+              availablePorts.map<DropdownMenuItem<String>>((String value) {
                 return DropdownMenuItem<String>(
                   value: value,
                   child: Text(
@@ -89,6 +96,19 @@ class _UIpageState extends State<UIpage> {
                 );
               }).toList(),
             ),
+          ),
+          Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: ElevatedButton(
+                onPressed: () {
+                  JsonFileHandler.writeListToJsonFile(RegisterList.regList);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text("Register values saved to registers.json"))
+                  );
+                },
+                child: const Icon(Icons.save),
+              )
           ),
         ],
       ),
@@ -105,7 +125,8 @@ class _UIpageState extends State<UIpage> {
           // Adjust this based on how many items you want
           itemBuilder: (context, index) {
             return Consumer<RegProvider>(
-                builder: (context, appState, _) => RegisterView(register: RegisterList.regList[index]),
+              builder: (context, appState, _) =>
+                  RegisterView(register: RegisterList.regList[index]),
             );
           },
         ),
@@ -119,6 +140,11 @@ class _UIpageState extends State<UIpage> {
               reg.syncedWithChip = true;
             }
           }
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content: Text("Sending data to $selectedPort")
+            ),
+          );
         },
         child: Icon(Icons.update),
       ),

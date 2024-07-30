@@ -110,9 +110,29 @@ class Register {
   String toString() {
     return "\nname: $name,value: $value\n";
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'nbits': nbits,
+      'signed': signed,
+      'help': help,
+      'value': value,
+    };
+  }
+
+  // Convert a Map to a Register object
+  factory Register.fromJson(Map<String, dynamic> json) {
+    return Register(
+      name: json['name'],
+      nbits: json['nbits'],
+      signed: json['signed'],
+      help: json['help'],
+      value: json['value'],
+      syncedWithChip: false
+    );
+  }
 }
-
-
 
 extension on String {
   String replaceCharAt(int index, String newChar) {
