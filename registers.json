@@ -11,7 +11,7 @@
     "nbits": 13,
     "signed": true,
     "help": "Low threshold for alpha block",
-    "value": 0
+    "value": -20
   },
   {
     "name": "GTHDR",
@@ -25,14 +25,14 @@
     "nbits": 8,
     "signed": false,
     "help": "Analog gain trimming of HSNR channel through programmable resistor, check table for states",
-    "value": 0
+    "value": 44
   },
   {
     "name": "FCHSNR",
     "nbits": 4,
     "signed": false,
     "help": "Analog frequency tunning of HSNR channel through current mirror adjust, 0-15uA increase",
-    "value": 0
+    "value": 3
   },
   {
     "name": "HSNR_EN",
@@ -46,21 +46,21 @@
     "nbits": 1,
     "signed": false,
     "help": "Enable HDR channel",
-    "value": 0
+    "value": 1
   },
   {
     "name": "BG_PROG_EN",
     "nbits": 1,
     "signed": false,
     "help": "Enable bandgap programming",
-    "value": 0
+    "value": 1
   },
   {
     "name": "BG_PROG",
     "nbits": 4,
     "signed": true,
     "help": "0000-> Nominal.\n 0001-0111 -> Trim (+2% to +18%).\n 1000-1111 -> Trim (-18% to -2%)",
-    "value": 7
+    "value": -5
   },
   {
     "name": "LDOA_BP",
@@ -74,7 +74,7 @@
     "nbits": 1,
     "signed": false,
     "help": "Digital LDO bypass",
-    "value": 0
+    "value": 1
   },
   {
     "name": "LDOD_mode_1V",
@@ -88,7 +88,7 @@
     "nbits": 1,
     "signed": false,
     "help": "Increase current LDOA",
-    "value": 0
+    "value": 1
   },
   {
     "name": "NSW",
@@ -102,27 +102,27 @@
     "nbits": 5,
     "signed": true,
     "help": "offset calibration HDR",
-    "value": 0
+    "value": 12
   },
   {
     "name": "OCHSNR",
     "nbits": 5,
     "signed": true,
     "help": "offset calibration HSNR",
-    "value": 0
+    "value": -3
   },
   {
     "name": "ATO",
     "nbits": 5,
     "signed": false,
     "help": "alpha timeout (24 - 390 Hz)",
-    "value": 0
+    "value": 12
   },
   {
     "name": "REF_OUT",
     "nbits": 1,
     "signed": false,
     "help": "Oscillator reference phases out (freq/4)",
-    "value": 0
+    "value": 1
   }
 ]

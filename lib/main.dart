@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 Future<void> main() async {
 
   RegisterList.regList = await JsonFileHandler.readListFromJsonFile() as List<Register>;
+  RegisterList.getSendData();
 
   runApp(ChangeNotifierProvider(
       create: (context) => RegProvider(),

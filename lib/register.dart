@@ -98,7 +98,7 @@ class Register {
     return -pow(2, nbits - 1).round();
   }
 
-  Uint8List getSendData() {
+  Uint8List getSendData() { // Do not use
     String toSend = decTobin(value.toString());
     toSend = "$name:$toSend\n";
     int byteAmount = toSend.length+1;
