@@ -28,6 +28,7 @@ class _UIpageState extends State<UIpage> {
   SerialWR serialWR = SerialWR();
   double upperSectionRatio = 0.2;
   Set<LogicalKeyboardKey> _pressedKeys = Set<LogicalKeyboardKey>();
+  ScrollController _consoleLogController = ScrollController();
 
   @override
   void initState() {
@@ -43,6 +44,7 @@ class _UIpageState extends State<UIpage> {
         setState(() {
           //CommandProcessor.processCommand(newLine);
           _logs.add(newLine);
+          _scrollToBottomIfNecessary();
         });
       });
     }
@@ -176,25 +178,29 @@ class _UIpageState extends State<UIpage> {
                   child: Padding(
                     padding:
                         const EdgeInsets.only(top: 20, left: 10, right: 90),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.black,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: ListView.builder(
-                        itemCount: _logs.length,
-                        itemBuilder: (context, index) {
-                          return Padding(
-                            padding: const EdgeInsets.all(4.0),
-                            child: Text(
-                              _logs[index],
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontFamily: 'monospace',
+                    child: SelectionArea(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: ListView.builder(
+                          controller: _consoleLogController,
+                          itemCount: _logs.length,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding: const EdgeInsets.all(4.0),
+                              child: Text(
+                                _logs[index],
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontFamily: 'RobotoMono',
+                                  fontSize: 14
+                                ),
                               ),
-                            ),
-                          );
-                        },
+                            );
+                          },
+                        ),
                       ),
                     ),
                   ),
@@ -264,9 +270,10 @@ class _UIpageState extends State<UIpage> {
   KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
     if (event is KeyDownEvent) {
       _pressedKeys.add(event.logicalKey); // Add the pressed key
-      if(_checkForShortcut()) {
+      if (_checkForShortcut()) {
         return KeyEventResult.handled;
-      }; // Check for keyboard shortcut
+      }
+      ; // Check for keyboard shortcut
     } else if (event is KeyUpEvent) {
       _pressedKeys.remove(event.logicalKey); // Remove key on release
     }
@@ -298,9 +305,22 @@ class _UIpageState extends State<UIpage> {
     }
 
     for (int i = command.length; i < command.length + data.length; i++) {
-      toSend[i] = data[i-command.length];
+      toSend[i] = data[i - command.length];
     }
 
     return toSend;
+  }
+
+  void _scrollToBottomIfNecessary() {
+    if (_consoleLogController.hasClients) {
+      // Check if the user is at the bottom of the ListView
+      double maxScrollExtent = _consoleLogController.position.maxScrollExtent;
+      double currentScrollPosition = _consoleLogController.position.pixels;
+
+      if (currentScrollPosition == maxScrollExtent) {
+        // Scroll to the bottom if already at the bottom
+        _consoleLogController.jumpTo(maxScrollExtent);
+      }
+    }
   }
 }
