@@ -10,6 +10,7 @@ import 'package:dogx_ui/register_view.dart';
 import 'package:dogx_ui/serial_wr.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_libserialport/flutter_libserialport.dart';
 import 'package:provider/provider.dart';
 
@@ -26,6 +27,7 @@ class _UIpageState extends State<UIpage> {
   String selectedPort = "";
   SerialWR serialWR = SerialWR();
   double upperSectionRatio = 0.2;
+  Set<LogicalKeyboardKey> _pressedKeys = Set<LogicalKeyboardKey>();
 
   @override
   void initState() {
@@ -49,249 +51,254 @@ class _UIpageState extends State<UIpage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Programmer',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        actions: <Widget>[
-          Padding(
-            padding: const EdgeInsets.only(right: 10.0),
-            child: DropdownButton<String>(
-              value: selectedPort,
-              icon: const Icon(Icons.menu),
-              iconSize: 24,
-              elevation: 16,
-              underline: Container(
-                height: 2,
-                color: Colors.deepPurpleAccent,
-              ),
-              onTap: () {
-                availablePorts = SerialPort.availablePorts;
-              },
-              onChanged: (String? newValue) {
-                setState(() {
-                  if (selectedPort != newValue) {
-                    for (Register r in RegisterList.regList) {
-                      r.syncedWithChip = false;
-                    }
-                  }
-                  if (selectedPort != newValue) {
-                    selectedPort = newValue!;
-                    if (selectedPort != "") {
-                      serialWR.begin(selectedPort);
-                      serialWR.listen((String newLine) {
-                        CommandProcessor.processCommand(newLine);
-                        print(newLine);
-                      });
-                    }
-                  }
-                });
-              },
-              items:
-              availablePorts.map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(
-                    value,
-                    style: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.w400),
-                  ),
-                );
-              }).toList(),
-            ),
+    return Focus(
+      autofocus: true,
+      onKeyEvent: _handleKeyEvent,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text(
+            'Programmer',
+            style: TextStyle(fontWeight: FontWeight.bold),
           ),
-          Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              child: ElevatedButton(
-                onPressed: () {
-                  JsonFileHandler.writeListToJsonFile(RegisterList.regList);
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                      content:
-                      Text("Register values saved to registers.json")));
-                },
-                child: const Icon(Icons.save),
-              )),
-        ],
-      ),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          double availableHeight = constraints.maxHeight;
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // First section (registers) takes adjustable space
-              SizedBox(
-                height: availableHeight * upperSectionRatio,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: GridView.builder(
-                    gridDelegate:
-                    const SliverGridDelegateWithMaxCrossAxisExtent(
-                      maxCrossAxisExtent: 300.0, // Maximum width of each item
-                      crossAxisSpacing: 2.0,
-                      mainAxisSpacing: 2.0,
-                      childAspectRatio: 1.95, // Adjust aspect ratio if needed
-                    ),
-                    itemCount: RegisterList.regList.length,
-                    itemBuilder: (context, index) {
-                      return Consumer<RegProvider>(
-                        builder: (context, appState, _) =>
-                            RegisterView(register: RegisterList.regList[index]),
-                      );
-                    },
-                  ),
+          actions: <Widget>[
+            Padding(
+              padding: const EdgeInsets.only(right: 10.0),
+              child: DropdownButton<String>(
+                value: selectedPort,
+                icon: const Icon(Icons.menu),
+                iconSize: 24,
+                elevation: 16,
+                underline: Container(
+                  height: 2,
+                  color: Colors.deepPurpleAccent,
                 ),
-              ),
-              // Draggable divider
-              GestureDetector(
-                behavior: HitTestBehavior.translucent,
-                onVerticalDragUpdate: (details) {
+                onTap: () {
+                  availablePorts = SerialPort.availablePorts;
+                },
+                onChanged: (String? newValue) {
                   setState(() {
-                    upperSectionRatio += details.delta.dy / availableHeight;
-                    if (upperSectionRatio < 0.1) upperSectionRatio = 0.1;
-                    if (upperSectionRatio > 0.9) upperSectionRatio = 0.9;
+                    if (selectedPort != newValue) {
+                      for (Register r in RegisterList.regList) {
+                        r.syncedWithChip = false;
+                      }
+                    }
+                    if (selectedPort != newValue) {
+                      selectedPort = newValue!;
+                      if (selectedPort != "") {
+                        serialWR.begin(selectedPort);
+                        serialWR.listen((String newLine) {
+                          CommandProcessor.processCommand(newLine);
+                          print(newLine);
+                        });
+                      }
+                    }
                   });
                 },
-                child: MouseRegion(
-                  cursor: SystemMouseCursors.resizeUpDown,
-                  child: Container(
-                    height: 4.0,
-                    color: Colors.grey,
-                    child: Center(
-                      child: Icon(Icons.drag_handle, color: Colors.black45),
+                items: availablePorts
+                    .map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(
+                      value,
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.w400),
                     ),
-                  ),
-                ),
+                  );
+                }).toList(),
               ),
-              // Second section (Log/Console) takes the remaining height
-              SizedBox(
-                height: availableHeight * (1 - (upperSectionRatio + 0.02)),
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 20, left: 10, right: 90),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.black,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: ListView.builder(
-                      itemCount: _logs.length,
+            ),
+            Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: ElevatedButton(
+                  onPressed: () {
+                    JsonFileHandler.writeListToJsonFile(RegisterList.regList);
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content:
+                            Text("Register values saved to registers.json")));
+                  },
+                  child: const Icon(Icons.save),
+                )),
+          ],
+        ),
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            double availableHeight = constraints.maxHeight;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // First section (registers) takes adjustable space
+                SizedBox(
+                  height: availableHeight * upperSectionRatio,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: GridView.builder(
+                      gridDelegate:
+                          const SliverGridDelegateWithMaxCrossAxisExtent(
+                        maxCrossAxisExtent: 300.0, // Maximum width of each item
+                        crossAxisSpacing: 2.0,
+                        mainAxisSpacing: 2.0,
+                        childAspectRatio: 1.95, // Adjust aspect ratio if needed
+                      ),
+                      itemCount: RegisterList.regList.length,
                       itemBuilder: (context, index) {
-                        return Padding(
-                          padding: const EdgeInsets.all(4.0),
-                          child: Text(
-                            _logs[index],
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontFamily: 'monospace',
-                            ),
-                          ),
+                        return Consumer<RegProvider>(
+                          builder: (context, appState, _) => RegisterView(
+                              register: RegisterList.regList[index]),
                         );
                       },
                     ),
                   ),
                 ),
-              ),
-            ],
-          );
-        },
-      ),
-      floatingActionButton: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(bottom: 15.0),
-          child: FloatingActionButton(
-            heroTag: 'reset_button', // Unique hero tag
-            onPressed: () {
-              Uint8List c = prepareCommandData("HIZ:", Uint8List(0));
-              serialWR.print(c);
-
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("Sending RESET to $selectedPort")),
-                snackBarAnimationStyle: AnimationStyle(duration:
-                Duration(milliseconds: 500)),
-              );
-            },
-            child: Text('Reset'),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(bottom: 15.0),
-          child: FloatingActionButton(
-            heroTag: 'hiz_button', // Unique hero tag
-            onPressed: () {
-              Uint8List c = prepareCommandData("HIZ:", Uint8List(0));
-              serialWR.print(c);
-
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("Sending HIZ to $selectedPort")),
-                snackBarAnimationStyle: AnimationStyle(duration:
-                Duration(milliseconds: 500)),
-              );
-
-            },
-            child: Text('HiZ'),
-          ),
-        ),
-        FloatingActionButton(
-          heroTag: 'update_button', // Unique hero tag
-          onPressed: () {
-
-            serialWR.print(prepareCommandData("DATA:", RegisterList.getSendData()));
-
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("Sending data to $selectedPort")),
-              snackBarAnimationStyle: AnimationStyle(duration:
-              Duration(milliseconds: 500)),
+                // Draggable divider
+                GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onVerticalDragUpdate: (details) {
+                    setState(() {
+                      upperSectionRatio += details.delta.dy / availableHeight;
+                      if (upperSectionRatio < 0.1) upperSectionRatio = 0.1;
+                      if (upperSectionRatio > 0.9) upperSectionRatio = 0.9;
+                    });
+                  },
+                  child: MouseRegion(
+                    cursor: SystemMouseCursors.resizeUpDown,
+                    child: Container(
+                      height: 4.0,
+                      color: Colors.grey,
+                      child: Center(
+                        child: Icon(Icons.drag_handle, color: Colors.black45),
+                      ),
+                    ),
+                  ),
+                ),
+                // Second section (Log/Console) takes the remaining height
+                SizedBox(
+                  height: availableHeight * (1 - (upperSectionRatio + 0.02)),
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.only(top: 20, left: 10, right: 90),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.black,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: ListView.builder(
+                        itemCount: _logs.length,
+                        itemBuilder: (context, index) {
+                          return Padding(
+                            padding: const EdgeInsets.all(4.0),
+                            child: Text(
+                              _logs[index],
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontFamily: 'monospace',
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             );
           },
-          child: Icon(Icons.update),
         ),
-      ],
-    ),/* FloatingActionButton(
-        onPressed: () {
-          /*
-          bool changed = false;
-          for (Register reg in RegisterList.regList) {
-            if (!reg.syncedWithChip) {
-              changed = true;
-              serialWR.print(reg.getSendData());
-              print(reg);
-              reg.syncedWithChip = true;
-            }
-          }
-          if(changed) {
-            String toSend = "RUN\n";
-            int byteAmount = toSend.length+1;
-            List<int> list = [byteAmount];
-            list.addAll(ascii.encode(toSend));
-            serialWR.print(Uint8List.fromList(list));
-          } */
+        floatingActionButton: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(bottom: 15.0),
+              child: FloatingActionButton(
+                heroTag: 'reset_button', // Unique hero tag
+                onPressed: () {
+                  Uint8List c = prepareCommandData("HIZ:", Uint8List(0));
+                  serialWR.print(c);
 
-          serialWR.print(RegisterList.getSendData());
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Sending RESET to $selectedPort")),
+                    snackBarAnimationStyle:
+                        AnimationStyle(duration: Duration(milliseconds: 500)),
+                  );
+                },
+                child: Text('Reset'),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 15.0),
+              child: FloatingActionButton(
+                heroTag: 'hiz_button', // Unique hero tag
+                onPressed: () {
+                  Uint8List c = prepareCommandData("HIZ:", Uint8List(0));
+                  serialWR.print(c);
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Sending data to $selectedPort")),
-          );
-        },
-        child: Icon(Icons.update),
-      ),*/
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Sending HIZ to $selectedPort")),
+                    snackBarAnimationStyle:
+                        AnimationStyle(duration: Duration(milliseconds: 500)),
+                  );
+                },
+                child: Text('HiZ'),
+              ),
+            ),
+            FloatingActionButton(
+              heroTag: 'update_button', // Unique hero tag
+              onPressed: () => sendRegData(),
+              child: Icon(Icons.update),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
+  void sendRegData() {
+    serialWR.print(prepareCommandData("DATA:", RegisterList.getSendData()));
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Sending data to $selectedPort")),
+      snackBarAnimationStyle:
+          AnimationStyle(duration: Duration(milliseconds: 500)),
+    );
+  }
+
+  KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
+    if (event is KeyDownEvent) {
+      _pressedKeys.add(event.logicalKey); // Add the pressed key
+      if(_checkForShortcut()) {
+        return KeyEventResult.handled;
+      }; // Check for keyboard shortcut
+    } else if (event is KeyUpEvent) {
+      _pressedKeys.remove(event.logicalKey); // Remove key on release
+    }
+
+    return KeyEventResult.ignored; // Mark event as handled
+  }
+
+  bool _checkForShortcut() {
+    bool isControlPressed =
+        _pressedKeys.contains(LogicalKeyboardKey.controlLeft) ||
+            _pressedKeys.contains(LogicalKeyboardKey.controlRight);
+
+    bool isSPressed = _pressedKeys.contains(LogicalKeyboardKey.keyP);
+
+    if (isControlPressed && isSPressed) {
+      sendRegData();
+      return true;
+    }
+
+    return false;
+  }
+
   Uint8List prepareCommandData(String commandText, Uint8List data) {
-
     Uint8List command = ascii.encode(commandText);
-    Uint8List toSend = Uint8List(data.length+command.length);
+    Uint8List toSend = Uint8List(data.length + command.length);
 
-    for(int i = 0; i< command.length; i++){
+    for (int i = 0; i < command.length; i++) {
       toSend[i] = command[i];
     }
 
-    for(int i = command.length; i < command.length+data.length;i++){
-      toSend[i] = data[i];
+    for (int i = command.length; i < command.length + data.length; i++) {
+      toSend[i] = data[i-command.length];
     }
 
     return toSend;
