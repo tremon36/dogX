@@ -40,14 +40,11 @@ class _UIpageState extends State<UIpage> {
 
     if (selectedPort != "" && serialWR.initialized) {
       serialWR.listen((String newLine) {
-        print(newLine);
-        setState(() {
-          //CommandProcessor.processCommand(newLine);
-          _logs.add(newLine);
-          _scrollToBottomIfNecessary();
-        });
+        //print(newLine);
+        addLog(newLine);
       });
     }
+
     super.initState();
   }
 
@@ -89,8 +86,7 @@ class _UIpageState extends State<UIpage> {
                       if (selectedPort != "") {
                         serialWR.begin(selectedPort);
                         serialWR.listen((String newLine) {
-                          CommandProcessor.processCommand(newLine);
-                          print(newLine);
+                          addLog(newLine);
                         });
                       }
                     }
@@ -184,22 +180,25 @@ class _UIpageState extends State<UIpage> {
                           color: Colors.black,
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: ListView.builder(
+                        child: Scrollbar(
                           controller: _consoleLogController,
-                          itemCount: _logs.length,
-                          itemBuilder: (context, index) {
-                            return Padding(
-                              padding: const EdgeInsets.all(4.0),
-                              child: Text(
-                                _logs[index],
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontFamily: 'RobotoMono',
-                                  fontSize: 14
+                          thumbVisibility: true,
+                          child: ListView.builder(
+                            itemCount: _logs.length,
+                            controller: _consoleLogController,
+                            itemBuilder: (context, index) {
+                              return Padding(
+                                padding: const EdgeInsets.all(4.0),
+                                child: Text(
+                                  _logs[index],
+                                  style: const TextStyle(
+                                      color: Colors.white,
+                                      fontFamily: 'RobotoMono',
+                                      fontSize: 14),
                                 ),
-                              ),
-                            );
-                          },
+                              );
+                            },
+                          ),
                         ),
                       ),
                     ),
@@ -260,11 +259,7 @@ class _UIpageState extends State<UIpage> {
   void sendRegData() {
     serialWR.print(prepareCommandData("DATA:", RegisterList.getSendData()));
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Sending data to $selectedPort")),
-      snackBarAnimationStyle:
-          AnimationStyle(duration: Duration(milliseconds: 500)),
-    );
+    _logs.add("PROGRAMMING DATA SENT");
   }
 
   KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
@@ -311,16 +306,36 @@ class _UIpageState extends State<UIpage> {
     return toSend;
   }
 
-  void _scrollToBottomIfNecessary() {
+  void _scrollToBottomIfNecessary(double currentPos, double prevMaxScroll) {
     if (_consoleLogController.hasClients) {
       // Check if the user is at the bottom of the ListView
-      double maxScrollExtent = _consoleLogController.position.maxScrollExtent;
-      double currentScrollPosition = _consoleLogController.position.pixels;
 
-      if (currentScrollPosition == maxScrollExtent) {
+
+      if (currentPos == prevMaxScroll) {
         // Scroll to the bottom if already at the bottom
-        _consoleLogController.jumpTo(maxScrollExtent);
+        print("equal, scrolling");
+        _consoleLogController.animateTo(_consoleLogController.position.maxScrollExtent,
+            duration: Duration(milliseconds: 150), curve: Curves.easeIn);
+
+        // jumpTo(maxScrollExtent);
       }
+
+      prevMaxScroll = _consoleLogController.position.maxScrollExtent;
+      print("prev: $prevMaxScroll   current: $currentPos}");
     }
+  }
+
+  void addLog(String log) {
+    double currentScrollPosition = _consoleLogController.position.pixels;
+    double prevMaxScroll = _consoleLogController.position.maxScrollExtent;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToBottomIfNecessary(currentScrollPosition, prevMaxScroll);
+    });
+
+    setState(() {
+      //CommandProcessor.processCommand(newLine);
+      _logs.add(log);
+    });
   }
 }
