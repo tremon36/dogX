@@ -26,10 +26,9 @@ module tb_DOGX_digital_TOP;
     $display("closed file sucessfuly");
   end
 
-  //  Clock & reset generation
+  //  Clock, reset, and enable generation
 
   logic CLK_24M;
-  logic CLK_3M;
   logic reset;
 
   initial begin
@@ -40,29 +39,32 @@ module tb_DOGX_digital_TOP;
     end
   end
 
-  initial begin
-    CLK_3M = 0;
-    #20.833333333333336;
-    forever begin
-      CLK_3M = !CLK_3M;
-      #166.66666666666669;
-    end
-  end
 
   initial begin
     reset = 0;
-    @(posedge CLK_3M);
+    @(posedge CLK_24M);
     reset = 1;
+  end
+
+  // enable generation for data write
+
+  logic enable_sampling_3M;
+  int   count = 0;
+  always begin
+    @(posedge CLK_24M);
+    enable_sampling_3M = count == 0;
+    count = count + 1;
+    if (count == 8) count = 0;
   end
 
 
   // Counter values generation using sine, graycount and extension ----------------------------------------------------------------------------------
 
-  function compute_sine();
+  function static void compute_sine();
     // Carrying sine (4 Hz), 0.6 amplitude
-    real carrier = 0.6*$sin(2 * 3.14159 * 4 * $realtime / 1000000000);
+    real carrier = 0.6 * $sin(2 * 3.14159 * 4 * $realtime / 1000000000);
     // 1 Khz sine (small)
-    sineval_n = 0.05*$sin(2 * 3.14159 * sinefreq * $realtime / 1000000000) + carrier;
+    sineval_n = 0.05 * $sin(2 * 3.14159 * sinefreq * $realtime / 1000000000) + carrier;
     sineval_p = -sineval_n;
   endfunction
 
@@ -188,7 +190,6 @@ module tb_DOGX_digital_TOP;
 
   DOGX_digital_TOP dut (
       .CLK_24M(CLK_24M),
-      .CLK_3M(CLK_3M),
       .reset(reset),
       .counter_HSNR_n(counter_n_HSNR),
       .counter_HSNR_p(counter_p_HSNR),
@@ -196,7 +197,7 @@ module tb_DOGX_digital_TOP;
       .counter_HDR_p(counter_p_HDR),
       .alpha_th_high(9'd10),
       .alpha_th_low(9'd7),
-      .alpha_timeout_mask(5'b10000),
+      .alpha_timeout_mask(5'b00100),
       .alpha_out(alpha),
       .alpha_in(alpha),
       .converter_output(output_data)
@@ -204,13 +205,13 @@ module tb_DOGX_digital_TOP;
 
   // Save data to file
 
-  always_ff @(posedge CLK_3M) begin
+  always_ff @(posedge enable_sampling_3M) begin
     $fdisplay(fd, "%d,%d", $signed(output_data), alpha);
   end
 
   // Run 1 s (3e6 clock cycles)
   initial begin
-    repeat (3000000) @(posedge CLK_3M);
+    repeat (3000000 * 8) @(posedge CLK_24M);
     $finish;
   end
 

@@ -2,7 +2,6 @@
 
 module DOGX_digital_TOP (
     input wire CLK_24M,
-    input wire CLK_3M,
     input wire reset,
     input wire [8:0] counter_HSNR_p,
     input wire [8:0] counter_HSNR_n,
@@ -16,18 +15,28 @@ module DOGX_digital_TOP (
     output wire [10:0] converter_output
 );
 
+  // Clock gate enable generation
+
+  logic enable_sampling_3M;
+
+  clockgen cg_enable_generator (
+      .CLK_24M(CLK_24M),
+      .reset(reset),
+      .enable_sampling_3M(enable_sampling_3M)
+  );
+
   // HDR and HSNR channels
 
-  logic [8:0] HSNR_output;
-  logic [8:0] HDR_output;
+  logic [ 8:0] HSNR_output;
+  logic [ 8:0] HDR_output;
 
   logic [10:0] HSNR_output_extended;
   logic [10:0] HDR_output_extended;
 
-  datapath #(
+  datapath_one_clock #(
       .N_BITS_ACC_EXT(3)
   ) HSNR_datapath (
-      .CLK_3M(CLK_3M),
+      .enable_sampling_3M(enable_sampling_3M),
       .CLK_24M(CLK_24M),
       .reset(reset),
       .counter_p(counter_HSNR_p),
@@ -35,10 +44,10 @@ module DOGX_digital_TOP (
       .channel_output(HSNR_output)
   );
 
-  datapath #(
+  datapath_one_clock #(
       .N_BITS_ACC_EXT(3)
   ) HDR_datapath (
-      .CLK_3M(CLK_3M),
+      .enable_sampling_3M(enable_sampling_3M),
       .CLK_24M(CLK_24M),
       .reset(reset),
       .counter_p(counter_HDR_p),
@@ -47,7 +56,7 @@ module DOGX_digital_TOP (
   );
 
   always_comb begin
-    HSNR_output_extended = { {2{HSNR_output[8]}}, HSNR_output };
+    HSNR_output_extended = {{2{HSNR_output[8]}}, HSNR_output};
     HDR_output_extended  = {HDR_output, 2'b00};
   end
 
@@ -58,6 +67,7 @@ module DOGX_digital_TOP (
 
   alpha_block_v2 alpha_gen (
       .clk(CLK_24M),
+      .enable_sampling(enable_sampling_3M),
       .reset(reset),
       .hdr_current_value(HDR_output),
       .threshold_high(alpha_th_high),

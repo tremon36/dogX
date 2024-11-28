@@ -2,6 +2,7 @@
 
 module alpha_block_v2 (
     input wire clk,
+    input wire enable_sampling,
     input wire reset,
     input wire [8:0] hdr_current_value,
     input wire [8:0] threshold_high,
@@ -37,8 +38,10 @@ module alpha_block_v2 (
     if (!reset) begin
       timeout_current_value <= 0;
     end else begin
+      if(enable_sampling) begin
       if (reset_count) timeout_current_value <= 0;
       else if (count_enable) timeout_current_value <= timeout_current_value + 1;
+      end
     end
   end
 
