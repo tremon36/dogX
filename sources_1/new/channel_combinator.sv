@@ -10,10 +10,23 @@ module channel_combinator (
     output wire [10:0] data_output
 );
 
-  logic [ 4:0] alpha_sequence;
+  logic [4:0] alpha_sequence;
   logic [14:0] combination_output;
+  logic enable_compute;
 
   assign data_output = combination_output[14:4];  // Discard decimals
+
+  logic select_changed;
+  logic select_delayed;
+
+  always_ff @(posedge clk or negedge reset) begin
+    if (!reset) select_delayed <= 0;
+    else begin
+      if (enable_3M) select_delayed <= select;
+    end
+  end
+
+  assign select_changed = select_delayed != select;
 
   alpha_sequence_generator alphagen (
       .reset(reset),
@@ -27,6 +40,7 @@ module channel_combinator (
       .reset(reset),
       .clk(clk),
       .enable_3M(enable_3M),
+      .enable_compute(select_changed),
       .data_a(data_c1),
       .data_b(data_c2),
       .alpha_sequence(alpha_sequence),  // 00000 is a, 10000 is b. Linear combination in the middle

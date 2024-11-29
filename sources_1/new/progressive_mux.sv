@@ -28,6 +28,7 @@ module progressive_mux (
     input  wire         reset,
     input  wire         clk,
     input  wire         enable_3M,
+    input  wire         enable_compute, // Enable compute should be 1 when combining
     input  wire  [10:0] data_a,
     input  wire  [10:0] data_b,
     input  wire  [ 4:0] alpha_sequence,  // 00000 is a, 10000 is b. Linear combination in the middle
@@ -37,22 +38,11 @@ module progressive_mux (
   // Alpha sequence is expected to go from 0 to 1 or from 1 to 0. Last three digits are decimals, so 1 is 01.000 and 0 is 00.000
 
   logic enable_progression;
-  logic enable_progression_delayed;
   logic start_mul;
   logic [10:0] difference;
   logic [10:0] k;
   logic [10:0] t;
   logic [14:0] mult_output;
-
-  always_ff @(posedge clk or negedge reset) begin
-    if(!reset) enable_progression_delayed <= 0;
-    else begin
-        if(enable_3M) begin
-            enable_progression_delayed <= enable_progression;
-        end
-    end
-
-  end
 
   always_comb begin
 
@@ -61,7 +51,7 @@ module progressive_mux (
 
     enable_progression = !alpha_sequence[4] && alpha_sequence != 0; // Sequence is not finished (neither up or down)
 
-    if (enable_progression) begin
+    if (enable_compute || enable_progression) begin // @TODO
       start_mul = enable_3M;
     end else begin
       start_mul = 0;
@@ -69,7 +59,7 @@ module progressive_mux (
 
     difference  = k - t;
 
-    if(enable_progression) begin
+    if(enable_progression) begin // @TODO
         output_data = mult_output + {t, 4'b0000};
     end else begin
         if(alpha_sequence[4]) begin

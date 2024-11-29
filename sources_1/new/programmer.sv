@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 
 /*
-    PROGRAMMER MODULE
+    PROGRAMMER MODULE - Ricardo Carrero Bardon - 22/11/2024
 
     The module programming interface is SPI (mode 00)
     CS is used both as a sync input and a clock input.
