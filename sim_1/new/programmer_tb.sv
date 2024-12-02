@@ -31,13 +31,13 @@ module programmer_tb;
   end
 
   // This input was generated using programming software for DOGX. Check that all registers are the same as the desired programming
-  // [2, 222, 236, 237, 88, 168, 200, 104, 110] where 3 is the first number to be sent
+  // [{[8'd2, 8'd222, 8'd236, 8'd237, 8'd89, 8'd144, 8'd208, 8'd213]}] where 3 is the first number to be sent
 
 
-  logic [71:0] data_to_sent;
+  logic [63:0] data_to_sent;
 
   initial begin
-    data_to_sent = {8'd2,8'd222,8'd236,8'd237,8'd88,8'd168,8'd200,8'd104,8'd110};
+    data_to_sent = {8'd2, 8'd222, 8'd236, 8'd237, 8'd89, 8'd144, 8'd208, 8'd213};
   end
 
   // Generate Chip select and SDI according to SCLK
@@ -51,7 +51,7 @@ module programmer_tb;
     chip_select = 0;
     repeat (2) #CLK_PERIOD;
     clock_enabled = 1;
-    repeat (72) @(posedge clk);
+    repeat (64) @(posedge clk);
     #1;
     clock_enabled = 0;
     repeat (2) #CLK_PERIOD;
@@ -60,7 +60,7 @@ module programmer_tb;
     $stop;
   end
 
-  int i = 71;
+  int i = 63;
   assign SDI = data_to_sent[i];
 
   always_ff @(posedge clk) begin
@@ -80,9 +80,6 @@ module programmer_tb;
   logic LDOD_BP;
   logic LDOD_mode_1V;
   logic LDOA_tweak;
-  logic NSW;
-  logic [3:0] OCHDR;
-  logic [3:0] OCHSNR;
   logic [8:0] ATHHI;
   logic [8:0] ATHLO;
   logic [4:0] ATO;
@@ -106,14 +103,11 @@ module programmer_tb;
       .LDOD_BP     (LDOD_BP),        // 1-bit output
       .LDOD_mode_1V(LDOD_mode_1V),   // 1-bit output
       .LDOA_tweak  (LDOA_tweak),     // 1-bit output
-      .NSW         (NSW),            // 1-bit output
-      .OCHDR       (OCHDR),          // 4-bit output
-      .OCHSNR      (OCHSNR),         // 4-bit output
       .ATHHI       (ATHHI),          // 9-bit output
       .ATHLO       (ATHLO),          // 9-bit output
       .ATO         (ATO),            // 5-bit output
       .REF_OUT     (REF_OUT),        // 1-bit output
-      .digital_RESET(digital_RESET), // 1-bit output
+      .DRESET      (digital_RESET),  // 1-bit output
       .HO(HO)                        // 1-bit output
   );
 

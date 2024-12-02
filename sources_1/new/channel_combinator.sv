@@ -28,7 +28,7 @@ module channel_combinator (
 
   assign select_changed = select_delayed != select;
 
-  alpha_sequence_generator alphagen (
+  alpha_sequence_generator alpha_sequence_gen (
       .reset(reset),
       .clk(clk),
       .enable_transition(enable_3M),

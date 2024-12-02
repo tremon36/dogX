@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-module tb_DOGX_digital_TOP;
+module tb_DOGX_digital_converter;
 
   real sineval_n = 0;
   real sineval_p = 0;
@@ -188,7 +188,7 @@ module tb_DOGX_digital_TOP;
   logic [10:0] output_data;
   logic alpha;
 
-  DOGX_digital_TOP dut (
+  DOGX_digital_converter dut (
       .CLK_24M(CLK_24M),
       .reset(reset),
       .counter_HSNR_n(counter_n_HSNR),

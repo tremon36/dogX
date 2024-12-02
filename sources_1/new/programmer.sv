@@ -27,18 +27,19 @@ module programmer (
     output wire LDOD_BP,
     output wire LDOD_mode_1V,
     output wire LDOA_tweak,
-    output wire NSW,
-    output wire [3:0] OCHDR,
-    output wire [3:0] OCHSNR,
     output wire [8:0] ATHHI,
     output wire [8:0] ATHLO,
     output wire [4:0] ATO,
+    output wire PALPHA,
     output wire REF_OUT,
-    output wire digital_RESET,
+    output wire DRESET,
     output wire HO
 );
 
-  logic [65:0] prog_data;
+  `define NUM_REGS 18
+  `define NUM_BITS 58
+
+  logic [`NUM_BITS-1:0] prog_data;
 
   // Assign each output to the corresponding data
 
@@ -53,36 +54,35 @@ module programmer (
   assign LDOD_BP = prog_data[28];
   assign LDOD_mode_1V = prog_data[29];
   assign LDOA_tweak = prog_data[30];
-  assign NSW = prog_data[31];
-  assign OCHDR = prog_data[35:32];
-  assign OCHSNR = prog_data[39:36];
-  assign ATHHI = prog_data[48:40];
-  assign ATHLO = prog_data[57:49];
-  assign ATO = prog_data[62:58];
-  assign REF_OUT = prog_data[63];
-  assign digital_RESET = prog_data[64];
-  assign HO = prog_data[65];
+  assign ATHHI = prog_data[39:31];
+  assign ATHLO = prog_data[48:40];
+  assign ATO = prog_data[53:49];
+  assign PALPHA = prog_data[54];
+  assign REF_OUT = prog_data[55];
+  assign DRESET = prog_data[56];
+  assign HO = prog_data[57];
 
   // Populate input prog_data_aux with SCLK
 
-  logic [65:0] prog_data_aux;
+  logic [`NUM_BITS-1:0] prog_data_aux;
+
 
   always_ff @(posedge SCLK or negedge reset) begin
-    if(!reset) begin
-        prog_data_aux <= 0;
+    if (!reset) begin
+      prog_data_aux <= 0;
     end else begin
-        if(!CS) begin      // Only do a shift when CS is low
-            prog_data_aux[65] <= SDI;
-            prog_data_aux[64:0] <= prog_data_aux[65:1];
-        end
+      if (!CS) begin  // Only do a shift when CS is low
+        prog_data_aux[`NUM_BITS-1]   <= SDI;
+        prog_data_aux[`NUM_BITS-2:0] <= prog_data_aux[`NUM_BITS-1:1];
+      end
     end
   end
 
   always_ff @(posedge CS or negedge reset) begin
-    if(!reset) begin
-        prog_data <= 0;
+    if (!reset) begin
+      prog_data <= 0;
     end else begin
-        prog_data <= prog_data_aux;
+      prog_data <= prog_data_aux;
     end
   end
 endmodule

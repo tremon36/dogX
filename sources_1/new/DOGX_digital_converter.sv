@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-module DOGX_digital_TOP (
+module DOGX_digital_converter (
     input wire CLK_24M,
     input wire reset,
     input wire [8:0] counter_HSNR_p,
@@ -10,6 +10,7 @@ module DOGX_digital_TOP (
     input wire [8:0] alpha_th_high,
     input wire [8:0] alpha_th_low,
     input wire [4:0] alpha_timeout_mask,
+    input wire use_progressive_alpha,
     input wire alpha_in,
     output wire alpha_out,
     output wire [10:0] converter_output
@@ -77,18 +78,43 @@ module DOGX_digital_TOP (
   );
 
 
-  // Generate converter output with alpha
+  // Generate converter output with alpha. Use progressive alpha only if selected
+
+  logic [10:0] p_comb_output;
+
+  channel_combinator progressive_combinator (
+      .reset(reset),
+      .clk(CLK_24M),
+      .enable_3M(enable_sampling_3M),
+      .select(alpha_in),
+      .data_c1(HSNR_output_extended),
+      .data_c2(HDR_output_extended),
+      .data_output(p_comb_output)
+  );
 
   logic [10:0] converter_output_internal;
   assign converter_output = converter_output_internal;
 
-  always_comb begin
-    if (alpha_in) begin
-      converter_output_internal = HDR_output_extended;
+  // Converter output is here. Only use progressive alpha if selected
+
+  always_ff @(posedge CLK_24M or negedge reset) begin
+    if (!reset) begin
+      converter_output_internal <= 0;
     end else begin
-      converter_output_internal = HSNR_output_extended;
+      if (enable_sampling_3M) begin
+        if (use_progressive_alpha) begin
+          converter_output_internal <= p_comb_output;
+        end else begin
+          if (alpha_in) begin
+            converter_output_internal <= HDR_output_extended;
+          end else begin
+            converter_output_internal <= HSNR_output_extended;
+          end
+        end
+      end
     end
   end
+
 
 
 endmodule
