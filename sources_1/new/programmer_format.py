@@ -37,24 +37,25 @@ def process_verilog_output(input_text):
 
 input_text = """
 
-    output wire [7:0] GTHDR,   
-    output wire [7:0] GTHSNR,  
-    output wire [3:0] FCHSNR,  
-    output wire HSNR_EN,       
-    output wire HDR_EN,           
-    output wire BG_PROG_EN,    
-    output wire [3:0] BG_PROG, 
-    output wire LDOA_BP,       
-    output wire LDOD_BP,          
-    output wire LDOD_mode_1V,  
-    output wire LDOA_tweak,    
-    output wire [8:0] ATHHI,   
-    output wire [8:0] ATHLO,   
-    output wire [4:0] ATO,     
-    output wire PALPHA,        
-    output wire REF_OUT,       
-    output wire DRESET,        
-    output wire HO             
+    output wire [7:0] GTHDR,
+    output wire [7:0] GTHSNR,
+    output wire [3:0] FCHSNR,
+    output wire HSNR_EN,
+    output wire HDR_EN,
+    output wire BG_PROG_EN,
+    output wire [3:0] BG_PROG,
+    output wire LDOA_BP,
+    output wire LDOD_BP,
+    output wire LDOD_mode_1V,
+    output wire LDOA_tweak,
+    output wire [8:0] ATHHI,
+    output wire [8:0] ATHLO,
+    output wire [4:0] ATO,
+    output wire PALPHA,
+    output wire DCFILT,
+    output wire REF_OUT,
+    output wire DRESET,
+    output wire HO         
 
 """
 

@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-module tb_datapath;
+module datapath_one_clock_v3_tb;
 
   real sineval_n = 0;
   real sineval_p = 0;
@@ -11,12 +11,12 @@ module tb_datapath;
   // File for output data
 
   initial begin
-    fd = $fopen("./data_out2.csv", "w");
+    fd = $fopen("./data_out3.csv", "w");
     if (fd) begin
-      $display("file ./data_out2.csv opened succesfully");
+      $display("file ./data_out3.csv opened succesfully");
       $fdisplay("data_out2");
     end else begin
-      $display("FAILED TO OPEN FILE ./data_out2.csv");
+      $display("FAILED TO OPEN FILE ./data_out3.csv");
       $stop;
     end
   end
@@ -26,11 +26,12 @@ module tb_datapath;
     $display("closed file sucessfuly");
   end
 
-  //  Clock & reset generation
+  //  Clock, reset & enable generation
 
   logic CLK_24M;
   logic CLK_3M;
   logic reset;
+  logic enable_sampling_3M;
 
   initial begin
     CLK_24M = 1;
@@ -41,18 +42,18 @@ module tb_datapath;
   end
 
   initial begin
-    CLK_3M = 0;
-    #20.833333333333336;
-    forever begin
-      CLK_3M = !CLK_3M;
-      #166.66666666666669;
-    end
+    reset = 0;
+    @(posedge CLK_24M);
+    reset = 1;
   end
 
-  initial begin
-    reset = 0;
-    @(posedge CLK_3M);
-    reset = 1;
+  int count = 0;
+
+  always begin
+    @(posedge CLK_24M);
+    enable_sampling_3M = count == 0;
+    count = count + 1;
+    if (count == 8) count = 0;
   end
 
 
@@ -114,31 +115,31 @@ module tb_datapath;
   );
 
   graycount direct_counter_n (
-    .clk(CLK_24M),
-    .phases(phases_n),
-    .sampled_binary(counter_n[4:0])
-);
+      .clk(CLK_24M),
+      .phases(phases_n),
+      .sampled_binary(counter_n[4:0])
+  );
 
 
-binary_counter_sync #(
-    .N_BITS(4)
-) extender_n (
-    .clk  (~counter_n[4]),
-    .reset(reset),
-    .value(counter_n[8:5])
-);
+  binary_counter_sync #(
+      .N_BITS(4)
+  ) extender_n (
+      .clk  (~counter_n[4]),
+      .reset(reset),
+      .value(counter_n[8:5])
+  );
 
-// ---------------------------------------------------------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------------------------------------------------------
 
   // DUT
 
   logic [8:0] output_data;
 
-  datapath #(
+  datapath_one_clock #(
       .N_BITS_ACC_EXT(3)
   ) dut (
       .CLK_24M(CLK_24M),
-      .CLK_3M(CLK_3M),
+      .enable_sampling_3M(enable_sampling_3M),
       .reset(reset),
       .counter_p(counter_p),
       .counter_n(counter_n),
@@ -147,13 +148,13 @@ binary_counter_sync #(
 
   // Save data to file
 
-  always_ff @(posedge CLK_3M) begin
-    $fdisplay(fd,"%d", $signed(output_data));
+  always_ff @(posedge enable_sampling_3M) begin
+    $fdisplay(fd, "%d", $signed(output_data));
   end
 
   // Run 1 s (3e6 clock cycles)
   initial begin
-    repeat (300000) @(posedge CLK_3M);
+    repeat ((300000 * 8)) @(posedge CLK_24M);
     $finish;
   end
 

@@ -31,13 +31,14 @@ module programmer (
     output wire [8:0] ATHLO,
     output wire [4:0] ATO,
     output wire PALPHA,
+    output wire DCFILT,
     output wire REF_OUT,
     output wire DRESET,
     output wire HO
 );
 
-  `define NUM_REGS 18
-  `define NUM_BITS 58
+  `define NUM_REGS 19
+  `define NUM_BITS 59
 
   logic [`NUM_BITS-1:0] prog_data;
 
@@ -58,9 +59,10 @@ module programmer (
   assign ATHLO = prog_data[48:40];
   assign ATO = prog_data[53:49];
   assign PALPHA = prog_data[54];
-  assign REF_OUT = prog_data[55];
-  assign DRESET = prog_data[56];
-  assign HO = prog_data[57];
+  assign DCFILT = prog_data[55];
+  assign REF_OUT = prog_data[56];
+  assign DRESET = prog_data[57];
+  assign HO = prog_data[58];
 
   // Populate input prog_data_aux with SCLK
 

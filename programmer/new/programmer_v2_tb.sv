@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-module programmer_tb;
+module programmer_v2_tb;
 
   // First generate clock and reset
 
