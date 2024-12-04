@@ -9,12 +9,12 @@ module dc_filter (
 );
 
   logic [ 8:0] b;
-  logic [ 8:0] c;
-  logic [ 8:0] d;
-  logic [ 8:0] e;
-  logic [26:0] f;
-  logic [26:0] g;
-  logic [ 8:0] h;
+  logic [8:0] c;
+  logic [22:0] d;
+  logic [22:0] e;
+  logic [38:0] f;
+  logic [38:0] g;
+  logic [22:0] h;
 
   always_ff @(posedge CLK_24M or negedge reset) begin
     if (!reset) begin
@@ -30,12 +30,12 @@ module dc_filter (
 
   always_comb begin
     c = c_data - b;
-    f = {e,18'd0};
-    g = f - e;
-    h = g[26:18];
-    d = c + h + g[17];
+    f = {e, 16'd0};
+    g = f - {{16{e[22]}},e};
+    h = g[38:16];
+    d = {c,14'd0} + h;
   end
 
-  assign o_data = d;
+  assign o_data = d[22:14];
 
 endmodule

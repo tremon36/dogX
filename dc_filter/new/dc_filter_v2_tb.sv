@@ -1,3 +1,5 @@
+`timescale 1ns / 10ps
+
 module dc_filter_v2_tb;
 
 logic clk;
@@ -19,7 +21,7 @@ initial begin
     @(posedge clk);
     #1;
     enable_3M = 0;
-    repeat (6) @(posedge clk);
+    repeat (7) @(posedge clk);
     #1;
   end
 end
@@ -30,15 +32,15 @@ logic [8:0] filter_input;
 logic [8:0] filter_output;
 
 real amplitude_1 = 128;
-real offset_1 = 0;
-real period_1_2 = (1 / (10e3)) * 1e9; // period in ns
+real offset_1 = 30;
+real period_1_2 = (1 / (5000.0)) * 1e9; // period in ns
 int sine_1 = 0;
 
 initial begin
   forever begin
       @(negedge enable_3M);
       #1;
-      sine_1 = $rtoi(amplitude_1 * $sin(2*3.12159/period_1_2 * $realtime) + offset_1);
+      sine_1 = $rtoi(amplitude_1 * $sin(2*3.14159265358979323846/period_1_2 * $realtime) + offset_1);
       filter_input = sine_1;
   end
 end
@@ -75,7 +77,9 @@ dc_filter DUT (
 // Signals
 
 initial begin
-    repeat (100000) @(posedge clk);
+    repeat (6_000_000) @(posedge clk);
+    $fclose(fd);
+    $display("FINISHED");
     $stop;
 end
 
