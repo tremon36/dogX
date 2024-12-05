@@ -1,87 +1,73 @@
 [
   {
-    "name": "ATH_HI",
-    "nbits": 10,
-    "signed": false,
-    "help": "High threshold for alpha block",
-    "value": 690
-  },
-  {
-    "name": "ATH_LO",
-    "nbits": 13,
-    "signed": true,
-    "help": "Low threshold for alpha block",
-    "value": -20
-  },
-  {
     "name": "GTHDR",
     "nbits": 8,
     "signed": false,
-    "help": "Analog gain trimming of HDR channel through programmable resistor, check table for states",
-    "value": 65
+    "help": "Analog gain trimming for HDR channel thrugh programmable resistor, check table for states",
+    "value": 237
   },
   {
     "name": "GTHSNR",
     "nbits": 8,
     "signed": false,
-    "help": "Analog gain trimming of HSNR channel through programmable resistor, check table for states",
-    "value": 44
+    "help": "Analog gain trimming for HSNR channel thrugh programmable resistor, check table for states",
+    "value": 221
   },
   {
     "name": "FCHSNR",
     "nbits": 4,
     "signed": false,
-    "help": "Analog frequency tunning of HSNR channel through current mirror adjust, 0-15uA increase",
-    "value": 3
+    "help": "Analog frequency tunning of HSNR channel through current mirror adjust, 0 - 15 uA increase",
+    "value": 12
   },
   {
     "name": "HSNR_EN",
     "nbits": 1,
     "signed": false,
     "help": "Enable HSNR channel",
-    "value": 0
+    "value": 1
   },
   {
     "name": "HDR_EN",
     "nbits": 1,
     "signed": false,
     "help": "Enable HDR channel",
-    "value": 1
+    "value": 0
   },
   {
     "name": "BG_PROG_EN",
     "nbits": 1,
     "signed": false,
-    "help": "Enable bandgap programming",
+    "help": "Enable Bandgap programming",
     "value": 1
   },
   {
     "name": "BG_PROG",
     "nbits": 4,
     "signed": true,
-    "help": "0000-> Nominal.\n 0001-0111 -> Trim (+2% to +18%).\n 1000-1111 -> Trim (-18% to -2%)",
-    "value": -5
+    "help": "0000 -> Nominal, else (-18% to +18%)",
+    "value": 5
   },
   {
     "name": "LDOA_BP",
     "nbits": 1,
     "signed": false,
-    "help": "Analog LDO bypass",
-    "value": 0
+    "help": "Analog LDO Bypass",
+    "value": 1
   },
   {
     "name": "LDOD_BP",
     "nbits": 1,
     "signed": false,
     "help": "Digital LDO bypass",
-    "value": 1
+    "value": 0
   },
   {
     "name": "LDOD_mode_1V",
     "nbits": 1,
     "signed": false,
-    "help": "Digital LDO 0.9V -> 1V",
-    "value": 0
+    "help": "Digital LDO 0.9V -> 1.0V",
+    "value": 1
   },
   {
     "name": "LDOA_tweak",
@@ -91,38 +77,59 @@
     "value": 1
   },
   {
-    "name": "NSW",
-    "nbits": 1,
+    "name": "ATHHI",
+    "nbits": 9,
     "signed": false,
-    "help": "Noise shaper Wordlength.  ‘0’ 12 bits - ‘1’ 11 bits",
-    "value": 0
+    "help": "alpha threshold value high",
+    "value": 76
   },
   {
-    "name": "OCHDR",
-    "nbits": 5,
-    "signed": true,
-    "help": "offset calibration HDR",
-    "value": 12
-  },
-  {
-    "name": "OCHSNR",
-    "nbits": 5,
-    "signed": true,
-    "help": "offset calibration HSNR",
-    "value": -3
+    "name": "ATHLO",
+    "nbits": 9,
+    "signed": false,
+    "help": "alpha threshold value low",
+    "value": 44
   },
   {
     "name": "ATO",
     "nbits": 5,
     "signed": false,
     "help": "alpha timeout (24 - 390 Hz)",
-    "value": 12
+    "value": 22
+  },
+  {
+    "name": "PALHPA",
+    "nbits": 1,
+    "signed": false,
+    "help": "Use progressive alpha",
+    "value": 0
+  },
+  {
+    "name": "DCFILT",
+    "nbits": 1,
+    "signed": false,
+    "help": "Use DC offset filter",
+    "value": 0
   },
   {
     "name": "REF_OUT",
     "nbits": 1,
     "signed": false,
     "help": "Oscillator reference phases out (freq/4)",
+    "value": 1
+  },
+  {
+    "name": "DRESET",
+    "nbits": 1,
+    "signed": false,
+    "help": "Digital RESET (0 is reset, 1 normal operation)",
+    "value": 0
+  },
+  {
+    "name": "HO",
+    "nbits": 1,
+    "signed": false,
+    "help": "High-Ohmic state (0 switch disconnected, 1 normal operation)",
     "value": 1
   }
 ]

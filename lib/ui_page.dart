@@ -216,14 +216,8 @@ class _UIpageState extends State<UIpage> {
               child: FloatingActionButton(
                 heroTag: 'reset_button', // Unique hero tag
                 onPressed: () {
-                  Uint8List c = prepareCommandData("HIZ:", Uint8List(0));
+                  Uint8List c = prepareCommandData("RESET:", Uint8List(0));
                   serialWR.print(c);
-
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Sending RESET to $selectedPort")),
-                    snackBarAnimationStyle:
-                        AnimationStyle(duration: Duration(milliseconds: 500)),
-                  );
                 },
                 child: Text('Reset'),
               ),
@@ -235,12 +229,6 @@ class _UIpageState extends State<UIpage> {
                 onPressed: () {
                   Uint8List c = prepareCommandData("HIZ:", Uint8List(0));
                   serialWR.print(c);
-
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Sending HIZ to $selectedPort")),
-                    snackBarAnimationStyle:
-                        AnimationStyle(duration: Duration(milliseconds: 500)),
-                  );
                 },
                 child: Text('HiZ'),
               ),
@@ -257,7 +245,8 @@ class _UIpageState extends State<UIpage> {
   }
 
   void sendRegData() {
-    serialWR.print(prepareCommandData("DATA:", RegisterList.getSendData()));
+   // serialWR.print(prepareCommandData("DATA:", RegisterList.getSendData()));
+    print(RegisterList.getSendData().toString());
 
     _logs.add("PROGRAMMING DATA SENT");
   }
