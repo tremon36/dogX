@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:nativewrappers/_internal/vm/lib/internal_patch.dart';
 import 'dart:typed_data';
 
 import 'package:dogx_ui/command_processor.dart';
@@ -39,10 +40,16 @@ class _UIpageState extends State<UIpage> {
     }
 
     if (selectedPort != "" && serialWR.initialized) {
-      serialWR.listen((String newLine) {
-        //print(newLine);
+
+      serialWR.listenStrings((String newLine) {
         addLog(newLine);
       });
+
+      serialWR.listenBytes((int incomingByte){
+        // @TODO guardarlo en un archivo o lo que sea
+        print(incomingByte);
+      });
+
     }
 
     super.initState();
@@ -85,7 +92,7 @@ class _UIpageState extends State<UIpage> {
                       selectedPort = newValue!;
                       if (selectedPort != "") {
                         serialWR.begin(selectedPort);
-                        serialWR.listen((String newLine) {
+                        serialWR.listenStrings((String newLine) {
                           addLog(newLine);
                         });
                       }

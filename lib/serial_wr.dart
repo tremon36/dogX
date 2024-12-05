@@ -18,7 +18,7 @@ class SerialWR {
     }
   }
 
-  Future<void> listen(Function(String) onValue) async {
+  Future<void> listenStrings(Function(String) onValue) async {
 
     if(!initialized) throw Exception("Initialize port first");
     SerialPortReader reader = SerialPortReader(port,timeout: 0);
@@ -28,7 +28,7 @@ class SerialWR {
 
       List<int> bytes = [];
       bytes.addAll(event);
-      bytes.removeWhere((int e) => e < 41 && e != 10);
+      bytes.removeWhere((int e) => e <= 31 && e != 10);
 
         currentRead = "$currentRead${ascii.decode(bytes)}";
         if(currentRead.contains("\n")) {
@@ -37,6 +37,21 @@ class SerialWR {
           onValue(received.first);
           currentRead = received.last;
         }
+    });
+  }
+
+  Future<void> listenBytes(Function(int) onValue) async {
+
+    if(!initialized) throw Exception("Initialize port first");
+    SerialPortReader reader = SerialPortReader(port,timeout: 0);
+
+    reader.stream.listen((event) {
+
+      List<int> bytes = [];
+      bytes.addAll(event);
+      for(int b in bytes) {
+        onValue(b);
+      }
     });
   }
   
