@@ -85,7 +85,7 @@ module DOGX_digital_converter_v2_tb;
       .GAIN(1),
       .F0  (196608000)
   ) HSNR_n (
-      .input_voltage(sineval_n),
+      .input_voltage(sineval_n + 0.05),
       .phases(phases_n_HSNR)
   );
 
@@ -93,7 +93,7 @@ module DOGX_digital_converter_v2_tb;
       .GAIN(1),
       .F0  (196608000)
   ) HSNR_p (
-      .input_voltage(sineval_p),
+      .input_voltage(sineval_p - 0.05),
       .phases(phases_p_HSNR)
   );
 
@@ -198,7 +198,8 @@ module DOGX_digital_converter_v2_tb;
       .alpha_th_high(9'd10),
       .alpha_th_low(9'd7),
       .alpha_timeout_mask(5'b00100),
-      .use_progressive_alpha(1'b1),
+      .use_progressive_alpha(1'b0),
+      .use_dc_filter(1'b0),
       .alpha_out(alpha),
       .alpha_in(alpha),
       .converter_output(output_data)
@@ -213,6 +214,8 @@ module DOGX_digital_converter_v2_tb;
   // Run 1 s (3e6 clock cycles)
   initial begin
     repeat (3000000 * 8) @(posedge CLK_24M);
+    $fclose(fd);
+    $display("FILE CLOSED");
     $finish;
   end
 

@@ -11,6 +11,7 @@ module DOGX_digital_converter (
     input wire [8:0] alpha_th_low,
     input wire [4:0] alpha_timeout_mask,
     input wire use_progressive_alpha,
+    input wire use_dc_filter,
     input wire alpha_in,
     output wire alpha_out,
     output wire [10:0] converter_output
@@ -28,6 +29,9 @@ module DOGX_digital_converter (
 
   // HDR and HSNR channels
 
+  logic [ 8:0] HSNR_ns_output;
+  logic [ 8:0] HDR_ns_output;
+
   logic [ 8:0] HSNR_output;
   logic [ 8:0] HDR_output;
 
@@ -42,7 +46,7 @@ module DOGX_digital_converter (
       .reset(reset),
       .counter_p(counter_HSNR_p),
       .counter_n(counter_HSNR_n),
-      .channel_output(HSNR_output)
+      .channel_output(HSNR_ns_output)
   );
 
   datapath_one_clock #(
@@ -53,8 +57,45 @@ module DOGX_digital_converter (
       .reset(reset),
       .counter_p(counter_HDR_p),
       .counter_n(counter_HDR_n),
-      .channel_output(HDR_output)
+      .channel_output(HDR_ns_output)
   );
+
+  // DC filter
+
+  logic [8:0] HSNR_filter_output;
+  logic [8:0] HDR_filter_output;
+
+  dc_filter filter_HSNR (
+      .reset(reset),
+      .CLK_24M(CLK_24M),
+      .enable_3M(enable_sampling_3M && use_dc_filter),
+      .c_data(HSNR_ns_output),
+      .o_data(HSNR_filter_output)
+  );
+
+  dc_filter filter_HDR (
+      .reset(reset),
+      .CLK_24M(CLK_24M),
+      .enable_3M(enable_sampling_3M && use_dc_filter),
+      .c_data(HDR_ns_output),
+      .o_data(HDR_filter_output)
+  );
+
+
+  always_comb begin
+    if (use_dc_filter) begin
+      HSNR_output = HSNR_filter_output;
+      HDR_output  = HDR_filter_output;
+    end else begin
+      HSNR_output = HSNR_ns_output;
+      HDR_output  = HDR_ns_output;
+    end
+  end
+
+
+
+
+  // Gain compensation
 
   always_comb begin
     HSNR_output_extended = {{2{HSNR_output[8]}}, HSNR_output};
